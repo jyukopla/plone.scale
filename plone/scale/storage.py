@@ -9,6 +9,7 @@ from zope.annotation import IAnnotations
 from zope.interface import implementer
 from zope.interface import Interface
 
+import hashlib
 import logging
 import pprint
 import warnings
@@ -225,7 +226,27 @@ class AnnotationStorage(MutableMapping):
             self._cleanup()
             data, format_, dimensions = result
             width, height = dimensions
-            uid = str(uuid4())
+
+            try:
+                # Calculate deterministic uid that only changes with changes
+                field = getattr(self.context, parameters['fieldname'])
+                uid = hashlib.md5(''.join([
+                    str(key),
+                    str(field._p_mtime)  # noqa
+                ])).hexdigest()
+                uid = '-'.join([
+                    uid[0:8],
+                    uid[8:12],
+                    uid[12:16],
+                    uid[16:20],
+                    uid[20:],
+                ])
+            except Exception:  # noqa
+                logger.warning(
+                    'Failed to calculate deterministic scale uid for: ' + str(key)
+                )
+                uid = str(uuid4())
+
             info = dict(
                 uid=uid,
                 data=data,

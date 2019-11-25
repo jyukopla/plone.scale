@@ -5,6 +5,8 @@ import math
 import sys
 import warnings
 
+from plone.scale.duotone import duotone
+
 
 try:
     from cStringIO import StringIO
@@ -64,6 +66,9 @@ def scaleImage(image, width=None, height=None, direction='down',
         format_ = 'PNG'
 
     icc_profile = image.info.get('icc_profile')
+
+    filters = direction.split(';')
+    direction = filters.pop(-1)
     image = scalePILImage(image, width, height, direction)
 
     # convert to simpler mode if possible
@@ -91,6 +96,10 @@ def scaleImage(image, width=None, height=None, direction='down',
     if result is None:
         result = StringIO()
         new_result = True
+
+    # Apply duotone filter
+    if 'duotone' in filters:
+        duotone(image)
 
     image.save(
         result,

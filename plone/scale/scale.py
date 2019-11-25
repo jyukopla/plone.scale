@@ -67,8 +67,8 @@ def scaleImage(image, width=None, height=None, direction='down',
 
     icc_profile = image.info.get('icc_profile')
 
-    filters = direction.split(';')
-    direction = filters.pop(-1)
+    filter_params = direction.split(';')
+    direction = filter_params.pop(-1)
     image = scalePILImage(image, width, height, direction)
 
     # convert to simpler mode if possible
@@ -98,8 +98,8 @@ def scaleImage(image, width=None, height=None, direction='down',
         new_result = True
 
     # Apply duotone filter
-    if 'duotone' in filters:
-        duotone(image)
+    if 'duotone' in filter_params[:1]:
+        duotone(image, *filter_params[1:])
 
     image.save(
         result,
